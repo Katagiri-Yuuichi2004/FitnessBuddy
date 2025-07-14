@@ -1,0 +1,25 @@
+name: Sync to GitLab
+
+on:
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Add GitLab remote and push
+      run: |
+        git remote add gitlab https://gitlab-ci-token:${{ secrets.GITLAB_TOKEN }}@gitlab.com/YOUR_GITLAB_USERNAME/YOUR_GITLAB_REPO.git
+        git push gitlab --all
+        git push gitlab --tags
+      env:
+        GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
