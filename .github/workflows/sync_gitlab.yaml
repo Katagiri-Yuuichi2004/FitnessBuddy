@@ -23,19 +23,11 @@ jobs:
         run: |
           GITLAB_REMOTE_URL="https://sync_token:${{ secrets.GITLAB_PAT }}@${{ secrets.GITLAB_REPO_URL#https:// }}"
           
-          # Add the GitLab repository as a new remote named 'gitlab'.
-          # The --force flag is used to overwrite if the remote already exists,
-          # which can be useful in some re-run scenarios, but be cautious.
           git remote add gitlab "$GITLAB_REMOTE_URL" || git remote set-url gitlab "$GITLAB_REMOTE_URL"
 
-          # Push all branches and tags to the GitLab remote.
-          # The --mirror flag ensures an exact mirror, including branch deletions.
-          # It pushes all refs (branches, tags, etc.) as they are in the source.
           echo "Pushing to GitLab repository..."
           git push --mirror gitlab
           echo "Synchronization complete!"
         env:
-          # Ensure the GitLab PAT is available as an environment variable for the run step
-          # This is good practice for sensitive information.
           GITLAB_PAT: ${{ secrets.GITLAB_PAT }}
           GITLAB_REPO_URL: ${{ secrets.GITLAB_REPO_URL }}
