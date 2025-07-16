@@ -21,7 +21,7 @@ jobs:
 
       - name: Add GitLab Remote and Push
         run: |
-          GITLAB_REMOTE_URL="https://sync_token:${{ secrets.GITLAB_PAT }}@${{ secrets.GITLAB_REPO_URL#https:// }}"
+          GITLAB_REMOTE_URL="https://sync_token:${{ secrets.GITLAB_PAT }}@${{secrets.GITLAB_REPO_URL}}"
           
           git remote add gitlab "$GITLAB_REMOTE_URL" || git remote set-url gitlab "$GITLAB_REMOTE_URL"
 
