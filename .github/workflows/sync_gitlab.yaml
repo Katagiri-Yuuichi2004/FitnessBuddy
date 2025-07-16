@@ -1,25 +1,41 @@
-name: Sync to GitLab
+name: Sync GitHub to GitLab
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main 
   workflow_dispatch:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-latest # Use a fresh Ubuntu environment for the job
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Add GitLab remote and push
-      run: |
-        git remote add gitlab https://gitlab-ci-token:${{ secrets.GITLAB_TOKEN }}@gitlab.com/YOUR_GITLAB_USERNAME/YOUR_GITLAB_REPO.git
-        git push gitlab --all
-        git push gitlab --tags
-      env:
-        GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+      - name: Checkout GitHub Repository
+        uses: actions/checkout@v4 # Action to checkout your GitHub repository code
+
+      - name: Configure Git User
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Add GitLab Remote and Push
+        run: |
+          GITLAB_REMOTE_URL="https://sync_token:${{ secrets.GITLAB_PAT }}@${{ secrets.GITLAB_REPO_URL#https:// }}"
+          
+          # Add the GitLab repository as a new remote named 'gitlab'.
+          # The --force flag is used to overwrite if the remote already exists,
+          # which can be useful in some re-run scenarios, but be cautious.
+          git remote add gitlab "$GITLAB_REMOTE_URL" || git remote set-url gitlab "$GITLAB_REMOTE_URL"
+
+          # Push all branches and tags to the GitLab remote.
+          # The --mirror flag ensures an exact mirror, including branch deletions.
+          # It pushes all refs (branches, tags, etc.) as they are in the source.
+          echo "Pushing to GitLab repository..."
+          git push --mirror gitlab
+          echo "Synchronization complete!"
+        env:
+          # Ensure the GitLab PAT is available as an environment variable for the run step
+          # This is good practice for sensitive information.
+          GITLAB_PAT: ${{ secrets.GITLAB_PAT }}
+          GITLAB_REPO_URL: ${{ secrets.GITLAB_REPO_URL }}
